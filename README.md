@@ -39,7 +39,24 @@ windows:
   ```sql
   USE conectados;
   ```
+### 2. Configurar la Conexión a la Base de Datos
 
+Antes de ejecutar el proyecto, configura la conexión a la base de datos en el archivo `src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/conectados
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_contraseña
+```
+
+Reemplaza `tu_usuario` y `tu_contraseña` con tus credenciales de MySQL.
+
+### 3. Clona el Repositorio
+
+Abre tu terminal o línea de comandos y clona el repositorio:
+
+```bash
+git clone
 ## Levantar el Proyecto
 
 ## Cómo usar
