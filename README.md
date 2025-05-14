@@ -51,12 +51,7 @@ spring.datasource.password=tu_contraseña
 
 Reemplaza `tu_usuario` y `tu_contraseña` con tus credenciales de MySQL.
 
-### 3. Clona el Repositorio
 
-Abre tu terminal o línea de comandos y clona el repositorio:
-
-```bash
-git clone
 ## Levantar el Proyecto
 
 ## Cómo usar
