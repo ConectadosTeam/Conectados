@@ -6,8 +6,39 @@
 
 Puede acceder a la Wiki del proyecto mediante el siguiente [enlace](https://github.com/lmellan/Conectados/wiki).  
 
+
 ## Instalación
 
+Para instalar y ejecutar esta aplicación en tu entorno local, sigue estos pasos:
+
+### 1. Instalación de la Base de Datos
+
+Este proyecto utiliza **MySQL** como base de datos. Así se puede configurar localmente:
+
+- **Instala MySQL**: Si no lo tienes instalado, descárgalo desde [MySQL Community Server](https://dev.mysql.com/downloads/) e instálalo siguiendo las instrucciones correspondientes.
+
+- **Inicia MySQL**: Asegúrate de que el servicio de MySQL esté corriendo. Puedes iniciarlo con:
+
+linux:
+  ```bash
+  sudo service mysql start
+  ```
+windows:
+  ```bash
+  mysql -u root -p
+  ```
+  
+- **Crea una base de datos**: Abre MySQL desde la terminal o una herramienta como MySQL Workbench y ejecuta:
+  
+  ```sql
+  CREATE DATABASE conectados;
+  ```
+  
+- **Usa la base de datos**: Ejecuta el siguiente comando para trabajar dentro de la base de datos:
+
+  ```sql
+  USE conectados;
+  ```
 
 ## Levantar el Proyecto
 
