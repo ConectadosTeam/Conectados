@@ -116,7 +116,7 @@ public class UsuarioServicesImpl implements UsuarioServices {
             usuario.setHoraInicio(usuarioActualizado.getHoraInicio());
             usuario.setHoraFin(usuarioActualizado.getHoraFin());
 
-            usuario.setRolActivo(usuarioActualizado.getRolActivo());
+            // usuario.setRolActivo(usuarioActualizado.getRolActivo());
 
             return usuarioRepository.save(usuario);
         }

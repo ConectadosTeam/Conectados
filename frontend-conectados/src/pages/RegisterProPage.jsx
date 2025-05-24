@@ -15,9 +15,9 @@ const RegisterProPage = () => {
     descripcion: "",
     zonaAtencion: "",
     availability: [],
+    numero: "",
   });
-  
-  
+
   const [error, setError] = useState("");
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -61,33 +61,39 @@ const RegisterProPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-  
+
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
-  
+
     if (formData.categoria.length === 0) {
       setError("Debes seleccionar al menos una categoría");
       return;
     }
-  
+
     if (formData.availability.length === 0) {
       setError("Debes seleccionar al menos un día de disponibilidad");
       return;
     }
-  
+
+    if (formData.numero && !/^569\d{8}$/.test(formData.numero)) {
+      setError("Número celular inválido. Usa el formato 569XXXXXXXX.");
+      return;
+    }
+
     const payload = {
       nombre: formData.name,
       correo: formData.email,
       contrasena: formData.password,
-      rol: "PRESTADOR",
+      roles: ["PRESTADOR"],
       zonaAtencion: formData.zonaAtencion,
       categoria: formData.categoria,
       descripcion: formData.descripcion,
       disponibilidad: formData.availability.map((id) => daysOfWeek[id].name),
+      ...(formData.numero !== "" && { numero: formData.numero }),
     };
-  
+
     try {
       const response = await fetch("http://localhost:8080/auth/register", {
         method: "POST",
@@ -96,10 +102,10 @@ const RegisterProPage = () => {
         },
         body: JSON.stringify(payload),
       });
-  
+
       if (!response.ok) {
         let errorMessage = "Error al registrar usuario";
-  
+
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
@@ -111,7 +117,7 @@ const RegisterProPage = () => {
             errorMessage = text;
           }
         }
-  
+
         if (
           response.status === 409 ||
           errorMessage.toLowerCase().includes("ya existe")
@@ -122,17 +128,14 @@ const RegisterProPage = () => {
         }
         return;
       }
-  
+
       navigate("/login");
     } catch (err) {
       console.error("Error:", err);
       setError("Error de conexión. Intenta nuevamente.");
     }
   };
-  
-  
-  
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -201,6 +204,28 @@ const RegisterProPage = () => {
               </div>
             </div>
 
+            <div>
+              <label
+                htmlFor="numero"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Número celular (opcional)
+              </label>
+              <div className="mt-1">
+                <input
+                  id="numero"
+                  name="numero"
+                  type="text"
+                  placeholder="569XXXXXXXX"
+                  value={formData.numero}
+                  onChange={handleChange}
+                  pattern="^569[0-9]{8}$"
+                  className="input-field"
+                  title="Debe tener el formato 569XXXXXXXX"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
@@ -250,7 +275,14 @@ const RegisterProPage = () => {
                 Categorías de servicio
               </label>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {["Electricista", "Plomero", "Limpieza", "Peluquero", "Jardinero", "Carpintero"].map((categoria) => (
+                {[
+                  "Electricista",
+                  "Plomero",
+                  "Limpieza",
+                  "Peluquero",
+                  "Jardinero",
+                  "Carpintero",
+                ].map((categoria) => (
                   <label key={categoria} className="flex items-center text-sm">
                     <input
                       type="checkbox"
@@ -270,7 +302,6 @@ const RegisterProPage = () => {
                 ))}
               </div>
             </div>
-
 
             <div>
               <label
@@ -294,7 +325,9 @@ const RegisterProPage = () => {
                 <option value="Atacama">Atacama</option>
                 <option value="Coquimbo">Coquimbo</option>
                 <option value="Valparaíso">Valparaíso</option>
-                <option value="Región Metropolitana">Región Metropolitana</option>
+                <option value="Región Metropolitana">
+                  Región Metropolitana
+                </option>
                 <option value="O’Higgins">O’Higgins</option>
                 <option value="Maule">Maule</option>
                 <option value="Ñuble">Ñuble</option>
@@ -307,8 +340,6 @@ const RegisterProPage = () => {
               </select>
             </div>
 
-
-
             <div>
               <label
                 htmlFor="description"
@@ -317,16 +348,16 @@ const RegisterProPage = () => {
                 Descripción de tus servicios
               </label>
               <div className="mt-1">
-              <textarea
-                id="description"
-                name="descripcion"  
-                rows={3}
-                required
-                value={formData.descripcion}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="Describe tu experiencia y los servicios que ofreces..."
-              />
+                <textarea
+                  id="description"
+                  name="descripcion"
+                  rows={3}
+                  required
+                  value={formData.descripcion}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Describe tu experiencia y los servicios que ofreces..."
+                />
               </div>
             </div>
 

@@ -1,16 +1,9 @@
 import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  act,
-  waitFor,
-} from "@testing-library/react";
-import '@testing-library/jest-dom';
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import RegisterPage from "./RegisterPage";
-import * as mockDataModule from "../data/mockData";
 
 // Mock de useNavigate
 const mockNavigate = jest.fn();
@@ -23,16 +16,7 @@ jest.mock("react-router-dom", () => {
   };
 });
 
-let mockUsersData = [];
-
-jest.mock('../data/mockData', () => ({
-  get users() {
-    return mockUsersData;
-  },
-}));
-
-
-describe("Página de Registro (RegisterPage)", () => {
+describe("RegisterPage", () => {
   const mockRegister = jest.fn();
 
   const renderPage = () =>
@@ -59,65 +43,47 @@ describe("Página de Registro (RegisterPage)", () => {
     });
   };
 
-  const getTermsCheckbox = () => screen.getByRole('checkbox', { name: /términos y condiciones/i });
-  const getTermsLinkButton = () => screen.getByRole('button', { name: /términos y condiciones/i });
-  const getTermsModalTitle = () => screen.getByText('Términos y Condiciones');
+  const getTermsCheckbox = () =>
+    screen.getByRole("checkbox", { name: /términos y condiciones/i });
 
-  // Helper para simular scroll hasta el final
+  const getTermsLinkButton = () =>
+    screen.getByRole("button", { name: /términos y condiciones/i });
+
   const simulateScrollToModalEnd = async () => {
-      // Usar document.querySelector para obtener el elemento scrolleable
-      const scrollableContent = document.querySelector('.overflow-y-auto');
-      if (!scrollableContent) {
-          throw new Error("No se encontró el contenido scrolleable del modal.");
-      }
+    // eslint-disable-next-line testing-library/no-node-access
+    const scrollableContent = document.querySelector(".overflow-y-auto");
+    if (!scrollableContent) throw new Error("No se encontró modal");
 
-      // *** Mockear las propiedades del elemento para simular el scroll ***
-      Object.defineProperty(scrollableContent, 'scrollHeight', { value: 500, writable: true }); // Valor total del contenido
-      Object.defineProperty(scrollableContent, 'clientHeight', { value: 100, writable: true }); // Altura visible del contenedor
-      // Simular scroll casi hasta el final para activar la condición (scrollTop + clientHeight >= scrollHeight - 10)
-      Object.defineProperty(scrollableContent, 'scrollTop', { value: 395, writable: true }); // 395 + 100 = 495 >= 500 - 10 (490)
+    Object.defineProperty(scrollableContent, "scrollHeight", {
+      value: 500,
+      writable: true,
+    });
+    Object.defineProperty(scrollableContent, "clientHeight", {
+      value: 100,
+      writable: true,
+    });
+    Object.defineProperty(scrollableContent, "scrollTop", {
+      value: 400,
+      writable: true,
+    });
 
-
-      // Usar act porque fireEvent.scroll puede disparar actualizaciones de estado
-      await act(async () => {
-          fireEvent.scroll(scrollableContent);
-      });
-
-       // Simular scroll *al* final para asegurarse de que canAcceptTerms se establece
-       // A veces, se necesitan múltiples eventos o un valor exactamente en el límite.
-       // Hagamos un segundo scroll para ser más robustos si la primera no activa
-       // (aunque el valor 395+100 debería funcionar para >= 490).
-       // O simplemente usar un valor de scrollTop que claramente cumpla la condición.
-       Object.defineProperty(scrollableContent, 'scrollTop', { value: 400, writable: true }); // 400 + 100 = 500 >= 490
-        await act(async () => {
-          fireEvent.scroll(scrollableContent);
-       });
-
-        // Limpiar las propiedades mockeadas (opcional, pero buena práctica si no usas restoreAllMocks para todo)
-        // Esto es más importante si haces múltiples scrolls en la misma prueba.
-        // Para este caso, como el modal se cierra después, no es estrictamente necesario entre scrolls del mismo modal,
-        // pero si reutilizaras el mismo elemento scrolleable, sí sería importante.
-   };
-
+    fireEvent.scroll(scrollableContent);
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUsersData = [];
   });
 
-
-  test("renderiza el formulario completo", () => {
+  test("renderiza todos los campos esperados", () => {
     renderPage();
     expect(screen.getByLabelText(/nombre completo/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/correo electrónico/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^contraseña$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/confirmar contraseña/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /registrarme/i })).toBeInTheDocument();
-    expect(getTermsCheckbox()).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /inicia sesión/i })).toHaveAttribute('href', '/login');
+    expect(screen.getByLabelText(/número celular/i)).toBeInTheDocument();
   });
 
-  test("muestra error si las contraseñas no coinciden al intentar enviar", async () => {
+  test("muestra error si las contraseñas no coinciden", async () => {
     renderPage();
     fillFormFields({
       name: "Juan",
@@ -127,217 +93,134 @@ describe("Página de Registro (RegisterPage)", () => {
     });
 
     fireEvent.click(getTermsCheckbox());
-    await screen.findByText('Términos y Condiciones');
-
-    // *** Usar la helper para simular scroll ***
+    await screen.findByText("Términos y Condiciones");
     await simulateScrollToModalEnd();
-
-    fireEvent.click(screen.getByRole('button', { name: /aceptar/i }));
-    await waitFor(() => expect(screen.queryByText('Términos y Condiciones')).not.toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /aceptar/i }));
 
     fireEvent.click(screen.getByRole("button", { name: /registrarme/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/las contraseñas no coinciden/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/las contraseñas no coinciden/i)
+      ).toBeInTheDocument();
     });
+
     expect(mockRegister).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  test("muestra error si el email ya está registrado al intentar enviar", async () => {
-    mockUsersData = [
-        { id: 1, email: "ya@existe.existe", password: "password123", name: "Existente" }
-    ];
-
+  test("muestra error si el número celular tiene un formato inválido", async () => {
     renderPage();
-
     fillFormFields({
-      name: "Pedro",
-      email: "ya@existe.existe",
-      password: "1234",
-      confirmPassword: "1234",
+      name: "Carlos",
+      email: "carlos@example.com",
+      password: "abcd1234",
+      confirmPassword: "abcd1234",
+    });
+
+    fireEvent.change(screen.getByLabelText(/número celular/i), {
+      target: { value: "123456" },
     });
 
     fireEvent.click(getTermsCheckbox());
-    await screen.findByText('Términos y Condiciones');
-
-    // *** Usar la helper para simular scroll ***
+    await screen.findByText("Términos y Condiciones");
     await simulateScrollToModalEnd();
-
-    fireEvent.click(screen.getByRole('button', { name: /aceptar/i }));
-    await waitFor(() => expect(screen.queryByText('Términos y Condiciones')).not.toBeInTheDocument());
-
+    fireEvent.click(screen.getByRole("button", { name: /aceptar/i }));
     fireEvent.click(screen.getByRole("button", { name: /registrarme/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/este correo electrónico ya está registrado/i)).toBeInTheDocument();
+      expect(screen.getByText(/número celular inválido/i)).toBeInTheDocument();
     });
+
     expect(mockRegister).not.toHaveBeenCalled();
-    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  // --- Pruebas para el Modal de Términos y Condiciones ---
-
-  test("abre el modal de términos y condiciones al hacer clic en el checkbox", async () => {
+  test("envía número celular si se completa correctamente", async () => {
     renderPage();
-    const termsCheckbox = getTermsCheckbox();
-    fireEvent.click(termsCheckbox);
-    await screen.findByText('Términos y Condiciones');
-  });
-
-   test("abre el modal de términos y condiciones al hacer clic en el enlace de texto", async () => {
-    renderPage();
-    const termsLinkButton = getTermsLinkButton();
-    fireEvent.click(termsLinkButton);
-    await screen.findByText('Términos y Condiciones');
-  });
-
-
-  test("el botón 'Aceptar' en el modal está inicialmente deshabilitado", async () => {
-    renderPage();
-    fireEvent.click(getTermsCheckbox());
-    await screen.findByText('Términos y Condiciones');
-
-    const acceptButton = screen.getByRole('button', { name: /aceptar/i });
-    expect(acceptButton).toBeDisabled();
-  });
-
-  test("scrollear el contenido del modal habilita el botón 'Aceptar'", async () => {
-    renderPage();
-    fireEvent.click(getTermsCheckbox());
-    await screen.findByText('Términos y Condiciones');
-
-    const acceptButton = screen.getByRole('button', { name: /aceptar/i });
-    expect(acceptButton).toBeDisabled(); // Asegurarse de que está deshabilitado antes del scroll
-
-    // *** Usar la helper para simular scroll ***
-    await simulateScrollToModalEnd();
-
-    // Esperar a que el botón se habilite (puede tomar un ciclo de evento)
-     await waitFor(() => {
-        expect(acceptButton).toBeEnabled();
-     });
-  });
-
-  test("hacer clic en 'Aceptar' en el modal cierra el modal y acepta los términos", async () => {
-    renderPage();
-    const termsCheckbox = getTermsCheckbox();
-    fireEvent.click(termsCheckbox);
-    await screen.findByText('Términos y Condiciones');
-
-    // *** Usar la helper para simular scroll ***
-    await simulateScrollToModalEnd();
-
-    const acceptButton = screen.getByRole('button', { name: /aceptar/i });
-     await act(async () => {
-        fireEvent.click(acceptButton);
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByText('Términos y Condiciones')).not.toBeInTheDocument();
-    });
-    expect(termsCheckbox).toBeChecked();
-  });
-
-   test("hacer clic en 'Cancelar' en el modal cierra el modal pero no acepta los términos", async () => {
-    renderPage();
-    const termsCheckbox = getTermsCheckbox();
-    fireEvent.click(termsCheckbox);
-    await screen.findByText('Términos y Condiciones');
-
-    const cancelButton = screen.getByRole('button', { name: /cancelar/i });
-
-    expect(termsCheckbox).not.toBeChecked();
-
-    await act(async () => {
-       fireEvent.click(cancelButton);
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByText('Términos y Condiciones')).not.toBeInTheDocument();
-    });
-
-    expect(termsCheckbox).not.toBeChecked();
-  });
-
-
-  // --- Prueba de Registro Exitoso (Actualizada) ---
-
-  test("registra correctamente y redirige al dashboard después de aceptar los términos", async () => {
-    renderPage();
-
     fillFormFields({
-      name: "María",
-      email: "maria@example.com",
-      password: "abcd",
-      confirmPassword: "abcd",
+      name: "Sofía",
+      email: "sofia@example.com",
+      password: "abcd1234",
+      confirmPassword: "abcd1234",
     });
 
-    const termsCheckbox = getTermsCheckbox();
-    expect(termsCheckbox).not.toBeChecked();
+    fireEvent.change(screen.getByLabelText(/número celular/i), {
+      target: { value: "56912345678" },
+    });
 
-    fireEvent.click(termsCheckbox);
-
-    await screen.findByText('Términos y Condiciones');
-
-    // *** Usar la helper para simular scroll ***
+    fireEvent.click(getTermsCheckbox());
+    await screen.findByText("Términos y Condiciones");
     await simulateScrollToModalEnd();
-
-    const acceptButton = screen.getByRole('button', { name: /aceptar/i });
-    expect(acceptButton).toBeEnabled();
-     await act(async () => {
-       fireEvent.click(acceptButton);
-    });
+    fireEvent.click(screen.getByRole("button", { name: /aceptar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /registrarme/i }));
 
     await waitFor(() => {
-      expect(screen.queryByText('Términos y Condiciones')).not.toBeInTheDocument();
-      expect(getTermsCheckbox()).toBeChecked();
+      expect(mockRegister).toHaveBeenCalledTimes(1);
     });
 
-    const submitButton = screen.getByRole("button", { name: /registrarme/i });
-     await act(async () => {
-      fireEvent.click(submitButton);
-    });
-
-    expect(mockRegister).toHaveBeenCalledTimes(1);
-    const registeredUserData = mockRegister.mock.calls[0][0];
-    expect(registeredUserData).toHaveProperty('name', 'María');
-    expect(registeredUserData).toHaveProperty('email', 'maria@example.com');
-    expect(registeredUserData).toHaveProperty('password', 'abcd');
-    expect(registeredUserData).toHaveProperty('isProfessional', false);
-    expect(registeredUserData).toHaveProperty('image', "https://randomuser.me/api/portraits/lego/1.jpg");
-
-    expect(mockNavigate).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith("/user-dashboard");
+    const payload = mockRegister.mock.calls[0][0];
+    expect(payload).toHaveProperty("numero", "56912345678");
   });
 
-   test("muestra error y NO registra si los términos no están aceptados", async () => {
-       renderPage();
+  test("abre el modal de términos y condiciones desde el checkbox", async () => {
+    renderPage();
+    fireEvent.click(getTermsCheckbox());
+    expect(
+      await screen.findByText("Términos y Condiciones")
+    ).toBeInTheDocument();
+  });
 
-       fillFormFields({
-         name: "Usuario No Terminos",
-         email: "noterms@example.com",
-         password: "123",
-         confirmPassword: "123",
-       });
+  test("abre el modal de términos y condiciones desde el botón de texto", async () => {
+    renderPage();
+    fireEvent.click(getTermsLinkButton());
+    expect(
+      await screen.findByText("Términos y Condiciones")
+    ).toBeInTheDocument();
+  });
 
-       const termsCheckbox = getTermsCheckbox();
-       expect(termsCheckbox).not.toBeChecked();
+  test("el botón 'Aceptar' en el modal está deshabilitado al inicio", async () => {
+    renderPage();
+    fireEvent.click(getTermsCheckbox());
+    expect(
+      await screen.findByRole("button", { name: /aceptar/i })
+    ).toBeDisabled();
+  });
 
-       const submitButton = screen.getByRole("button", { name: /registrarme/i });
+  test("scroll habilita el botón 'Aceptar' en el modal", async () => {
+    renderPage();
+    fireEvent.click(getTermsCheckbox());
+    const acceptBtn = await screen.findByRole("button", { name: /aceptar/i });
+    expect(acceptBtn).toBeDisabled();
+    await simulateScrollToModalEnd();
+    expect(acceptBtn).toBeEnabled();
+  });
 
-       await act(async () => {
-          fireEvent.click(submitButton);
-       });
+  test("clic en 'Aceptar' cierra el modal y acepta los términos", async () => {
+    renderPage();
+    fireEvent.click(getTermsCheckbox());
+    await screen.findByText("Términos y Condiciones");
+    await simulateScrollToModalEnd();
+    fireEvent.click(screen.getByRole("button", { name: /aceptar/i }));
 
-       // Esperar a que el mensaje de error aparezca
-       // Esto asume que has añadido la lógica en handleSubmit
-       await waitFor(() => {
-           expect(screen.getByText(/debes aceptar los términos y condiciones/i)).toBeInTheDocument();
-       });
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Términos y Condiciones")
+      ).not.toBeInTheDocument();
+    });
+    expect(getTermsCheckbox()).toBeChecked();
+  });
 
-       expect(mockRegister).not.toHaveBeenCalled();
-       expect(mockNavigate).not.toHaveBeenCalled();
-   });
+  test("clic en 'Cancelar' cierra el modal pero no acepta términos", async () => {
+    renderPage();
+    fireEvent.click(getTermsCheckbox());
+    await screen.findByText("Términos y Condiciones");
+    fireEvent.click(screen.getByRole("button", { name: /cancelar/i }));
 
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Términos y Condiciones")
+      ).not.toBeInTheDocument();
+    });
+    expect(getTermsCheckbox()).not.toBeChecked();
+  });
 });

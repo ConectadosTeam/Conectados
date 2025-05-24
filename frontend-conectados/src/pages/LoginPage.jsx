@@ -10,7 +10,7 @@ const LoginPage = () => {
     correo: "",
     contrasena: "",
   });
-  
+
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-  
+
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
@@ -33,25 +33,42 @@ const LoginPage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          correo: formData.correo,  
-          contrasena: formData.contrasena
-        })
-        
+          correo: formData.correo,
+          contrasena: formData.contrasena,
+        }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Credenciales incorrectas");
       }
-  
+
       const user = await response.json();
+      console.log("Usuario recibido del backend:", user);
+      if (!Array.isArray(user.roles) || user.roles.length === 0) {
+        setError("Tu cuenta no tiene roles asignados. Contacta al soporte.");
+        return;
+      }
+
       login(user);
-  
-      navigate(user.rol === "PRESTADOR" ? "/pro-dashboard" : "/user-dashboard");
+
+      if (user.roles.length > 1) {
+        navigate("/elegir-rol");
+      } else {
+        const unicoRol =
+          typeof user.roles[0] === "string"
+            ? user.roles[0].trim().toUpperCase()
+            : (user.roles[0]?.name || "").trim().toUpperCase();
+
+        console.log("Rol único interpretado:", unicoRol);
+
+        navigate(
+          unicoRol === "PRESTADOR" ? "/pro-dashboard" : "/user-dashboard"
+        );
+      }
     } catch (err) {
       setError(err.message || "Error al iniciar sesión");
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

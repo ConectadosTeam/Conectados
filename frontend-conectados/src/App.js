@@ -28,7 +28,10 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/register-pro" element={<RegisterProPage />} />
-              <Route path="/crear-resena/:idCita" element={<CreateReviewPage />} />
+              <Route
+                path="/crear-resena/:idCita"
+                element={<CreateReviewPage />}
+              />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/service/:id" element={<ServiceDetailPage />} />
               <Route path="/user-dashboard" element={<UserDashboard />} />

@@ -49,24 +49,24 @@ public class UsuarioController {
 
 
     // UsuarioController.java
-@PutMapping("/{id}/cambiar-rol")
-public ResponseEntity<?> cambiarRolActivo(
-    @PathVariable Long id,
-    @RequestBody CambioRolDto dto) {
+    // @PutMapping("/{id}/cambiar-rol")
+    // public ResponseEntity<?> cambiarRolActivo(
+    //     @PathVariable Long id,
+    //     @RequestBody CambioRolDto dto) {
 
-    Optional<Usuario> usuarioOpt = usuarioService.obtenerUsuarioPorId(id);
-    if (usuarioOpt.isPresent()) {
-        Usuario usuario = usuarioOpt.get();
-        if (!usuario.getRoles().contains(dto.getNuevoRol())) {
-            return ResponseEntity.badRequest().body("El usuario no tiene ese rol");
-        }
-        usuario.setRolActivo(dto.getNuevoRol());
-        usuarioService.actualizarUsuario(id, usuario); 
-        return ResponseEntity.ok("Rol activo cambiado exitosamente");
-    } else {
-        return ResponseEntity.notFound().build();
-    }
-}
+    //     Optional<Usuario> usuarioOpt = usuarioService.obtenerUsuarioPorId(id);
+    //     if (usuarioOpt.isPresent()) {
+    //         Usuario usuario = usuarioOpt.get();
+    //         if (!usuario.getRoles().contains(dto.getNuevoRol())) {
+    //             return ResponseEntity.badRequest().body("El usuario no tiene ese rol");
+    //         }
+    //         usuario.setRolActivo(dto.getNuevoRol());
+    //         usuarioService.actualizarUsuario(id, usuario); 
+    //         return ResponseEntity.ok("Rol activo cambiado exitosamente");
+    //     } else {
+    //         return ResponseEntity.notFound().build();
+    //     }
+    // }
 
 
 
