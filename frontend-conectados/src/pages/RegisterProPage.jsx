@@ -3,6 +3,7 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { CATEGORIAS } from "../data/categorias";
 import { users } from "../data/mockData";
 
 const RegisterProPage = () => {
@@ -21,6 +22,10 @@ const RegisterProPage = () => {
   const [error, setError] = useState("");
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // mostrar solo las primeras 6–8 categorías por defecto
+  const [mostrarTodas, setMostrarTodas] = useState(false);
+  const categoriasVisibles = mostrarTodas ? CATEGORIAS : CATEGORIAS.slice(0, 6);
 
   const daysOfWeek = [
     { id: 0, name: "Lunes" },
@@ -275,25 +280,18 @@ const RegisterProPage = () => {
                 Categorías de servicio
               </label>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {[
-                  "Electricista",
-                  "Plomero",
-                  "Limpieza",
-                  "Peluquero",
-                  "Jardinero",
-                  "Carpintero",
-                ].map((categoria) => (
+                {categoriasVisibles.map((categoria) => (
                   <label key={categoria} className="flex items-center text-sm">
                     <input
                       type="checkbox"
                       name="categoria"
                       value={categoria}
                       checked={formData.categoria.includes(categoria)}
-                      onChange={(e) => {
-                        const selected = formData.categoria.includes(categoria)
+                      onChange={() => {
+                        const updated = formData.categoria.includes(categoria)
                           ? formData.categoria.filter((c) => c !== categoria)
                           : [...formData.categoria, categoria];
-                        setFormData({ ...formData, categoria: selected });
+                        setFormData({ ...formData, categoria: updated });
                       }}
                       className="mr-2"
                     />
@@ -301,6 +299,16 @@ const RegisterProPage = () => {
                   </label>
                 ))}
               </div>
+
+              {CATEGORIAS.length > 6 && (
+                <button
+                  type="button"
+                  onClick={() => setMostrarTodas(!mostrarTodas)}
+                  className="text-sm text-green-600 underline mt-2"
+                >
+                  {mostrarTodas ? "Ver menos" : "Ver más"}
+                </button>
+              )}
             </div>
 
             <div>

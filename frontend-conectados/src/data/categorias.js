@@ -1,0 +1,22 @@
+export const CATEGORIAS = [
+  "Electricista",
+  "Gasfiter",
+  "Limpieza",
+  "Peluquero/a",
+  "Jardinero/a",
+  "Carpintero/a",
+  "Manicurista",
+  "Maquillador/a",
+  "Técnico en refrigeración",
+  "Profesor/a particular",
+  "Cerrajero/a",
+  "Niñera",
+  "Cocinero/a a domicilio",
+  "Veterinario/a móvil",
+  "Técnico en computación",
+  "Mecánico a domicilio",
+  "Instalador de paneles solares",
+  "Masajista",
+  "Pintor/a de casas",
+  "Entrenador/a personal"
+];
