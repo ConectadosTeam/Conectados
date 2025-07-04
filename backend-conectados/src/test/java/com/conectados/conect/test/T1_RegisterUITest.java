@@ -23,27 +23,27 @@ public class T1_RegisterUITest {
     private final String contrasena = "1234";
     private final String numero = "56912345678";
 
+
     @BeforeEach
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
-        try {
-            Path userDataDir = Files.createTempDirectory("selenium-profile");
-            userDataDir.toFile().deleteOnExit();
-            options.addArguments("--user-data-dir=" + userDataDir.toAbsolutePath());
-        } catch (Exception e) {
-            throw new RuntimeException("No se pudo crear directorio temporal para el perfil de Chrome", e);
-        }
 
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--headless=new"); // importante para Jenkins
-        options.addArguments("--disable-gpu");
-        options.addArguments("--remote-debugging-port=9222");
+        // Forzar directorio único de perfil temporal
+        String tempProfile = "/tmp/selenium-profile-" + System.currentTimeMillis();
+        options.addArguments(
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--user-data-dir=" + tempProfile
+        );
 
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.get(baseUrl + "/register");
     }
+
+
 
     @AfterEach
     public void tearDown() {
@@ -65,8 +65,8 @@ public class T1_RegisterUITest {
             boton.click();
 
             boolean redirigeALogin = wait.until(ExpectedConditions.or(
-                    ExpectedConditions.urlContains("/login"),
-                    ExpectedConditions.presenceOfElementLocated(By.className("text-red-600"))
+                ExpectedConditions.urlContains("/login"),
+                ExpectedConditions.presenceOfElementLocated(By.className("text-red-600"))
             ));
 
             String currentUrl = driver.getCurrentUrl();
